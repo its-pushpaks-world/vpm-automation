@@ -1,0 +1,4 @@
+# Sample variable values - As values are drift will be detected
+
+approved_ami_id = "ami-XXXXXXXXXXX"
+current_ami_id  = "ami-YYYYYYYYYYY"

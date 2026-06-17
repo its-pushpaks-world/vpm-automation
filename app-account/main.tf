@@ -13,6 +13,11 @@ provider "aws" {
   }
 }
 
+data "aws_ssm_parameter" "frontend_ami" {
+  provider = aws.platform_reader
+  name     = "/platform/amis/frontend/latest"
+}
+
 # 3. Call your module, passing the aliased provider
 module "frontend_instance" {
   source = "./../modules/ec2-instance"

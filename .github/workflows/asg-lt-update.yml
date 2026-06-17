@@ -1,0 +1,31 @@
+name: "Terraform: ASG Repave on AMI Update"
+
+on:
+  workflow_dispatch: # Allows EventBridge to trigger via API
+
+permissions:
+  id-token: write 
+  contents: read
+
+jobs:
+  terraform-apply:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./app-account
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT }}:role/GitHubActionsTerraformRole
+          aws-region: ap-south-1
+
+      - name: Terraform Init
+        run: terraform init
+
+      - name: Terraform Apply
+        run: terraform apply -auto-approve

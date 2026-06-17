@@ -5,9 +5,15 @@ variable "instance_type" {
   description = "EC2 instance type (e.g. t3.medium)"
 }
 
-variable "ami_id" {
+#variable "ami_id" {
+#  type        = string
+#  description = "AMI ID for the EC2 instance"
+#}
+
+variable "ami_ssm_parameter" {
   type        = string
-  description = "AMI ID for the EC2 instance"
+  description = "The SSM Parameter path in the central platform account"
+  default     = "/platform/amis/frontend/latest"
 }
 
 variable "environment" {

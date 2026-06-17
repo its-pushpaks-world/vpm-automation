@@ -15,12 +15,12 @@ provider "aws" {
 
 # 3. Call your module, passing the aliased provider
 module "frontend_instance" {
-  source = "../modules/ec2-instance"
+  source = "./../Assignment/modules/ec2-instance"
 
-  name              = "frontend-app"
-  environment       = "prod"
-  instance_type     = "t3.micro"
-  ami_ssm_parameter = "/platform/amis/frontend/latest"
+  name          = "frontend-app"
+  environment   = "prod"
+  instance_type = "t3.micro"
+  ami_id        = data.aws_ssm_parameter.frontend_ami.value
 
   # Pass the providers explicitly!
   providers = {

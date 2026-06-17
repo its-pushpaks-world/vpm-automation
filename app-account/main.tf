@@ -15,7 +15,7 @@ provider "aws" {
 
 # 3. Call your module, passing the aliased provider
 module "frontend_instance" {
-  source = "./modules/ec2-instance"
+  source = "../modules/ec2-instance"
 
   name              = "frontend-app"
   environment       = "prod"

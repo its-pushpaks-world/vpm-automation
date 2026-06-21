@@ -1,6 +1,6 @@
-variable "app_account_id" {
-  description = "The AWS Account ID of the Application Team"
-  type        = string
+variable "app_account_ids" {
+  description = "List of AWS Account IDs for Application Teams allowed to read AMIs"
+  type        = list(string)
 }
 
 variable "github_pat" {

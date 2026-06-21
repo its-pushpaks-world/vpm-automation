@@ -74,7 +74,6 @@ resource "aws_iam_role_policy" "platform_terraform_permissions" {
           "iam:ListRolePolicies",
           "iam:ListAttachedRolePolicies"
         ]
-        # Allows managing the cross-account reader role, the eventbridge role, and itself
         Resource = [
           "arn:aws:iam::*:role/CrossAccountAMIReaderRole",
           "arn:aws:iam::*:role/EventBridgeInvokeGitHubRole",
@@ -98,10 +97,18 @@ resource "aws_iam_role_policy" "platform_terraform_permissions" {
           "ssm:DeleteParameter",
           "ssm:GetParameter",
           "ssm:GetParameters",
-          "ssm:DescribeParameters",
           "ssm:ListTagsForResource"
         ]
         Resource = "arn:aws:ssm:ap-south-1:*:parameter/platform/*"
+      },
+      {
+        Sid      = "SSMGlobalDiscoveryAction"
+        Effect   = "Allow"
+        Action   = [
+          "ssm:DescribeParameters"
+        ]
+        # Required by AWS API design for discovery/listing actions
+        Resource = "*"
       },
       {
         Sid      = "EventBridgeAutomationManagement"
@@ -131,7 +138,6 @@ resource "aws_iam_role_policy" "platform_terraform_permissions" {
           "secretsmanager:GetSecretValue",
           "secretsmanager:PutSecretValue"
         ]
-        # EventBridge API Connections automatically generate internal secrets matching this path
         Resource = "arn:aws:secretsmanager:ap-south-1:*:secret:aws.events/*"
       }
     ]

@@ -1,3 +1,8 @@
+import {
+  to = aws_iam_role.github_actions_terraform_role
+  id = "GitHubActionsTerraformRole"
+}
+
 # -------------------------------------------------------------------------
 # 1. Fetch the EXISTING GitHub OIDC Provider
 # -------------------------------------------------------------------------

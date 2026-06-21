@@ -1,8 +1,10 @@
+# Add this to modules/ec2-instance/main.tf (or providers.tf inside the module)
 terraform {
   required_providers {
     aws = {
-      source = "hashicorp/aws"
-      # Removed configuration_aliases because this module no longer needs cross-account access!
+      source                = "hashicorp/aws"
+      version               = "~> 5.0"
+      configuration_aliases = [ aws.platform ] # Tells the module to accept the alias
     }
   }
 }

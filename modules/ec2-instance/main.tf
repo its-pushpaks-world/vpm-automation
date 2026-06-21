@@ -1,4 +1,3 @@
-# Add this to modules/ec2-instance/main.tf (or providers.tf inside the module)
 terraform {
   required_providers {
     aws = {

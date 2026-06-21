@@ -78,8 +78,8 @@ resource "aws_iam_role_policy" "terraform_permissions" {
         Effect   = "Allow"
         Action   = "s3:*"
         Resource = [
-          "arn:aws:s3:::vpm-app-tfstate-prod",
-          "arn:aws:s3:::vpm-app-tfstate-prod/*"
+          "arn:aws:s3:::vpm-app-tfstate-dev",
+          "arn:aws:s3:::vpm-app-tfstate-dev/*"
         ]
       },
       {

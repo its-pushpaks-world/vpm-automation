@@ -49,11 +49,19 @@ resource "aws_iam_role_policy" "terraform_permissions" {
         "Sid": "CrossAccountPlatformRoleAssumption",
         "Effect": "Allow",
         "Action": "sts:AssumeRole",
-        # Explicitly locked down to your Platform Account ID for best practice security
         "Resource": "arn:aws:iam::242655703609:role/CrossAccountAMIReaderRole"
       },
       {
-        "Sid": "TerraformS3RemoteStateAndLocking",
+        "Sid": "OidcProviderDiscovery",
+        "Effect": "Allow",
+        "Action": [
+          "iam:GetOpenIDConnectProvider",
+          "iam:ListOpenIDConnectProviders"
+        ],
+        "Resource": "*"
+      },
+      {
+        "Sid": "TerraformS3RemoteStateAndResourceManagement",
         "Effect": "Allow",
         "Action": [
           "s3:ListBucket",
@@ -61,9 +69,9 @@ resource "aws_iam_role_policy" "terraform_permissions" {
           "s3:PutObject",
           "s3:DeleteObject",
           "s3:CreateBucket",
-          "s3:PutBucketVersioning",
-          "s3:PutEncryptionConfiguration",
-          "s3:PutBucketPublicAccessBlock"
+          "s3:DeleteBucket",
+          "s3:GetBucket*",
+          "s3:PutBucket*"
         ],
         "Resource": [
           "arn:aws:s3:::vpm-app-tfstate-prod",
@@ -106,6 +114,7 @@ resource "aws_iam_role_policy" "terraform_permissions" {
         "Effect": "Allow",
         "Action": [
           "ec2:DescribeVpcs",
+          "ec2:DescribeVpcAttribute",
           "ec2:DescribeSubnets",
           "ec2:DescribeSecurityGroups",
           "ec2:DescribeInstances"

@@ -42,7 +42,7 @@ resource "aws_iam_role" "github_actions_platform_role" {
 }
 
 # -------------------------------------------------------------------------
-# 3. The Comprehensive Permissions Policy for Platform Infrastructure
+# 3. The Comprehensive, Bulletproof Policy for Platform Infrastructure
 # -------------------------------------------------------------------------
 resource "aws_iam_role_policy" "platform_terraform_permissions" {
   name = "PlatformTerraformDeploymentPermissions"
@@ -52,7 +52,7 @@ resource "aws_iam_role_policy" "platform_terraform_permissions" {
     Version = "2012-10-17"
     Statement = [
       {
-        Sid      = "OidcProviderDiscovery"
+        Sid      = "GlobalOidcProviderDiscovery"
         Effect   = "Allow"
         Action   = [
           "iam:GetOpenIDConnectProvider",
@@ -61,27 +61,18 @@ resource "aws_iam_role_policy" "platform_terraform_permissions" {
         Resource = "*"
       },
       {
-        Sid      = "PlatformIAMRoleAndPolicyManagement"
+        Sid      = "FullPlatformIAMRoleAndPolicyManagement"
         Effect   = "Allow"
-        Action   = [
-          "iam:CreateRole",
-          "iam:DeleteRole",
-          "iam:GetRole",
-          "iam:UpdateRole",
-          "iam:GetRolePolicy",
-          "iam:PutRolePolicy",
-          "iam:DeleteRolePolicy",
-          "iam:ListRolePolicies",
-          "iam:ListAttachedRolePolicies"
-        ]
+        Action   = "iam:*"
         Resource = [
           "arn:aws:iam::*:role/CrossAccountAMIReaderRole",
           "arn:aws:iam::*:role/EventBridgeInvokeGitHubRole",
-          "arn:aws:iam::*:role/GitHubActionsPlatformRole"
+          "arn:aws:iam::*:role/GitHubActionsPlatformRole",
+          "arn:aws:iam::*:policy/*"
         ]
       },
       {
-        Sid      = "PlatformS3RemoteStateManagement"
+        Sid      = "FullPlatformS3RemoteStateManagement"
         Effect   = "Allow"
         Action   = "s3:*"
         Resource = [
@@ -90,54 +81,21 @@ resource "aws_iam_role_policy" "platform_terraform_permissions" {
         ]
       },
       {
-        Sid      = "CentralRegistrySSMManagement"
+        Sid      = "FullSSMParameterManagement"
         Effect   = "Allow"
-        Action   = [
-          "ssm:PutParameter",
-          "ssm:DeleteParameter",
-          "ssm:GetParameter",
-          "ssm:GetParameters",
-          "ssm:ListTagsForResource"
-        ]
-        Resource = "arn:aws:ssm:ap-south-1:*:parameter/platform/*"
-      },
-      {
-        Sid      = "SSMGlobalDiscoveryAction"
-        Effect   = "Allow"
-        Action   = [
-          "ssm:DescribeParameters"
-        ]
-        # Required by AWS API design for discovery/listing actions
+        Action   = "ssm:*"
         Resource = "*"
       },
       {
-        Sid      = "EventBridgeAutomationManagement"
+        Sid      = "FullEventBridgeAutomationManagement"
         Effect   = "Allow"
-        Action   = [
-          "events:PutRule",
-          "events:DeleteRule",
-          "events:DescribeRule",
-          "events:PutTargets",
-          "events:RemoveTargets",
-          "events:PutConnection",
-          "events:DeleteConnection",
-          "events:DescribeConnection",
-          "events:PutApiDestination",
-          "events:DeleteApiDestination",
-          "events:DescribeApiDestination"
-        ]
+        Action   = "events:*"
         Resource = "*"
       },
       {
-        Sid      = "EventBridgeSecretStorageBehindTheScenes"
+        Sid      = "FullSecretsManagerWebhookStorage"
         Effect   = "Allow"
-        Action   = [
-          "secretsmanager:CreateSecret",
-          "secretsmanager:DeleteSecret",
-          "secretsmanager:DescribeSecret",
-          "secretsmanager:GetSecretValue",
-          "secretsmanager:PutSecretValue"
-        ]
+        Action   = "secretsmanager:*"
         Resource = "arn:aws:secretsmanager:ap-south-1:*:secret:aws.events/*"
       }
     ]

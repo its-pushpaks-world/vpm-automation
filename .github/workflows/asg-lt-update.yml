@@ -8,27 +8,52 @@ permissions:
   contents: read
 
 jobs:
-  terraform-apply:
+  terraform-eventbridge:
     runs-on: ubuntu-latest
+    
+    # 1. The Matrix Setup: Defines your target environments and secret mappings
+    strategy:
+      fail-fast: false # If Account 1 fails, Account 2 will still continue deploying
+      matrix:
+        include:
+          - env_name: "prod"
+            account_secret_key: "AWS_ACCOUNT"
+          - env_name: "dev"
+            account_secret_key: "AWS_ACCOUNT2"
+
     defaults:
       run:
         working-directory: ./app-account
+
+    # 2. Bridge secrets to the environment context so the matrix can read them dynamically
+    env:
+      AWS_ACCOUNT: ${{ secrets.AWS_ACCOUNT }}
+      AWS_ACCOUNT2: ${{ secrets.AWS_ACCOUNT2 }}
+      PLATFORM_ACCOUNT_ID: ${{ secrets.PLATFORM_ACCOUNT_ID }} # Central platform account ID
 
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
 
+      # 3. Dynamic AWS Authentication using the assumed OIDC role
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT }}:role/GitHubActionsTerraformRole
+          role-to-assume: arn:aws:iam::${{ env[matrix.account_secret_key] }}:role/GitHubActionsTerraformRole
           aws-region: ap-south-1
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
 
+      # 4. Dynamic Backend Initialization
       - name: Terraform Init
-        run: terraform init
+        run: |
+          terraform init \
+            -backend-config="bucket=vpm-app-tfstate-${{ matrix.env_name }}"
 
+      # 5. Execute Plan and Apply Passing Dynamic Variables
       - name: Terraform Apply
-        run: terraform apply -auto-approve
+        run: |
+          terraform apply \
+            -var="platform_account_id=${{ secrets.PLATFORM_ACCOUNT_ID }}" \
+            -auto-approve

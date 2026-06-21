@@ -1,0 +1,51 @@
+name: "Terraform: Platform Account Deployment"
+
+on:
+  workflow_dispatch: # Manual trigger via GitHub UI
+  push:
+    branches:
+      - main
+    paths:
+      - 'platform-account/**' # Automatically trigger if platform infra code changes
+
+permissions:
+  id-token: write 
+  contents: read
+
+jobs:
+  terraform-platform:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: ./platform-account
+
+    # Securely injection point for all Platform-level secrets
+    env:
+      # Compiles individual secrets into a clean, valid HCL string list array
+      TF_VAR_app_account_ids: '["${{ secrets.AWS_ACCOUNT }}", "${{ secrets.AWS_ACCOUNT2 }}"]'
+      
+      # Feeds the sensitive Personal Access Token directly to EventBridge Connection resource
+      TF_VAR_github_pat: ${{ secrets.PLATFORM_GITHUB_PAT }}
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      # Assumes your central OIDC role inside the Management/Platform account
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::${{ secrets.PLATFORM_ACCOUNT_ID }}:role/GitHubActionsPlatformRole
+          aws-region: ap-south-1
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      # Initializes using your fixed central S3 bucket config natively
+      - name: Terraform Init
+        run: terraform init
+
+      # Validates code changes and applies without prompts
+      - name: Terraform Apply
+        run: terraform apply -auto-approve

@@ -11,21 +11,24 @@ jobs:
   terraform-eventbridge:
     runs-on: ubuntu-latest
     
-    # 1. The Matrix Setup: Defines your target environments and secret mappings
+    # 1. The Matrix Setup: Defines target environments, secret keys, and unique directories
     strategy:
       fail-fast: false # If Account 1 fails, Account 2 will still continue deploying
       matrix:
         include:
           - env_name: "prod"
             account_secret_key: "AWS_ACCOUNT"
+            working_dir: "./app-account"      # Target directory for Account 1 (Prod)
           - env_name: "dev"
             account_secret_key: "AWS_ACCOUNT2"
+            working_dir: "./app-account2"     # Target directory for Account 2 (Dev)
 
+    # 2. Dynamically points the runner to the correct workspace per execution lane
     defaults:
       run:
-        working-directory: ./app-account
+        working-directory: ${{ matrix.working_dir }}
 
-    # 2. Bridge secrets to the environment context so the matrix can read them dynamically
+    # 3. Bridge secrets to the environment context so the matrix can read them dynamically
     env:
       AWS_ACCOUNT: ${{ secrets.AWS_ACCOUNT }}
       AWS_ACCOUNT2: ${{ secrets.AWS_ACCOUNT2 }}
@@ -35,7 +38,7 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      # 3. Dynamic AWS Authentication using the assumed OIDC role
+      # 4. Dynamic AWS Authentication using the assumed OIDC role
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -45,13 +48,13 @@ jobs:
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
 
-      # 4. Dynamic Backend Initialization
+      # 5. Dynamic Backend Initialization scoped to current directory & environment
       - name: Terraform Init
         run: |
           terraform init \
             -backend-config="bucket=vpm-app-tfstate-${{ matrix.env_name }}"
 
-      # 5. Execute Plan and Apply Passing Dynamic Variables
+      # 6. Execute Plan and Apply passing dynamic variables
       - name: Terraform Apply
         run: |
           terraform apply \

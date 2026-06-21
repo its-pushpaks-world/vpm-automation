@@ -3,16 +3,10 @@ import {
   id = "GitHubActionsTerraformRole"
 }
 
-# -------------------------------------------------------------------------
-# 1. Fetch the EXISTING GitHub OIDC Provider
-# -------------------------------------------------------------------------
 data "aws_iam_openid_connect_provider" "github" {
   url = "https://token.actions.githubusercontent.com"
 }
 
-# -------------------------------------------------------------------------
-# 2. The IAM Role and Trust Policy
-# -------------------------------------------------------------------------
 data "aws_caller_identity" "current" {}
 
 resource "aws_iam_role" "github_actions_terraform_role" {
@@ -40,9 +34,6 @@ resource "aws_iam_role" "github_actions_terraform_role" {
   })
 }
 
-# -------------------------------------------------------------------------
-# 3. The Permissions Policy for Terraform
-# -------------------------------------------------------------------------
 resource "aws_iam_role_policy" "terraform_permissions" {
   name = "TerraformDeploymentPermissions"
   role = aws_iam_role.github_actions_terraform_role.id
@@ -54,7 +45,8 @@ resource "aws_iam_role_policy" "terraform_permissions" {
         Sid      = "CrossAccountPlatformRoleAssumption"
         Effect   = "Allow"
         Action   = "sts:AssumeRole"
-        Resource = "arn:aws:iam::242655703609:role/CrossAccountAMIReaderRole"
+        # CLEANLY PARAMETERIZED HERE:
+        Resource = "arn:aws:iam::${var.platform_account_id}:role/CrossAccountAMIReaderRole"
       },
       {
         Sid      = "OidcProviderDiscovery"

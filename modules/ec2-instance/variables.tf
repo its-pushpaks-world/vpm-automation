@@ -5,10 +5,10 @@ variable "instance_type" {
   description = "EC2 instance type (e.g. t3.medium)"
 }
 
-#variable "ami_id" {
-#  type        = string
-#  description = "AMI ID for the EC2 instance"
-#}
+variable "ami_id" {
+  type        = string
+  description = "AMI ID for the EC2 instance"
+}
 
 variable "ami_ssm_parameter" {
   type        = string

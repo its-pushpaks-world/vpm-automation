@@ -75,7 +75,9 @@ resource "aws_iam_role_policy" "terraform_permissions" {
           "iam:UpdateRole",
           "iam:GetRolePolicy",
           "iam:PutRolePolicy",
-          "iam:DeleteRolePolicy"
+          "iam:DeleteRolePolicy",
+          "iam:ListRolePolicies",
+          "iam:ListAttachedRolePolicies"
         ]
         Resource = "arn:aws:iam::*:role/GitHubActionsTerraformRole"
       },

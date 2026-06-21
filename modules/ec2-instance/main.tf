@@ -1,8 +1,8 @@
 terraform {
   required_providers {
     aws = {
-      source                = "hashicorp/aws"
-      configuration_aliases = [aws.platform]
+      source = "hashicorp/aws"
+      # Removed configuration_aliases because this module no longer needs cross-account access!
     }
   }
 }
@@ -24,17 +24,15 @@ data "aws_security_group" "default" {
   vpc_id = data.aws_vpc.default.id
 }
 
-# --- 2. Retrieve Cross-Account AMI ---
-data "aws_ssm_parameter" "approved_ami" {
-  provider = aws.platform
-  name     = var.ami_ssm_parameter
-}
-
-# --- 3. Infrastructure Creation ---
+# --- 2. Infrastructure Creation ---
 resource "aws_launch_template" "ec2_lt" {
-  name_prefix            = "${var.name}-lt-"
-  image_id               = data.aws_ssm_parameter.approved_ami.value
-  instance_type          = var.instance_type
+  name_prefix   = "${var.name}-lt-"
+  
+  # HERE IS WHERE AMI_ID IS USED! 
+  # It takes the string passed from app-account/main.tf natively.
+  image_id      = var.ami_id 
+  
+  instance_type = var.instance_type
   vpc_security_group_ids = [data.aws_security_group.default.id]
 
   tags = {
@@ -57,13 +55,13 @@ resource "aws_autoscaling_group" "ec2_asg" {
   }
 }
 
-# --- 4. Business Hour Schedules ---
+# --- 3. Business Hour Schedules ---
 resource "aws_autoscaling_schedule" "scale_down" {
   scheduled_action_name  = "scale-down-nightly"
   min_size               = 0
   max_size               = 0
   desired_capacity       = 0
-  recurrence             = "0 18 * * *" # 6:00 PM
+  recurrence             = "0 18 * * *" 
   autoscaling_group_name = aws_autoscaling_group.ec2_asg.name
 }
 
@@ -72,7 +70,7 @@ resource "aws_autoscaling_schedule" "scale_up" {
   min_size               = 0
   max_size               = 1
   desired_capacity       = 1
-  recurrence             = "0 8 * * *" # 8:00 AM
+  recurrence             = "0 8 * * *" 
   autoscaling_group_name = aws_autoscaling_group.ec2_asg.name
 }
 

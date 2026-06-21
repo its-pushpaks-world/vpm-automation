@@ -59,4 +59,5 @@ jobs:
         run: |
           terraform apply \
             -var="platform_account_id=${{ secrets.PLATFORM_ACCOUNT_ID }}" \
+            -lock=false \
             -auto-approve

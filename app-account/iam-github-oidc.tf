@@ -46,42 +46,47 @@ resource "aws_iam_role_policy" "terraform_permissions" {
     Version = "2012-10-17"
     Statement = [
       {
-        "Sid": "CrossAccountPlatformRoleAssumption",
-        "Effect": "Allow",
-        "Action": "sts:AssumeRole",
-        "Resource": "arn:aws:iam::242655703609:role/CrossAccountAMIReaderRole"
+        Sid      = "CrossAccountPlatformRoleAssumption"
+        Effect   = "Allow"
+        Action   = "sts:AssumeRole"
+        Resource = "arn:aws:iam::242655703609:role/CrossAccountAMIReaderRole"
       },
       {
-        "Sid": "OidcProviderDiscovery",
-        "Effect": "Allow",
-        "Action": [
+        Sid      = "OidcProviderDiscovery"
+        Effect   = "Allow"
+        Action   = [
           "iam:GetOpenIDConnectProvider",
           "iam:ListOpenIDConnectProviders"
-        ],
-        "Resource": "*"
+        ]
+        Resource = "*"
       },
       {
-        "Sid": "TerraformS3RemoteStateAndResourceManagement",
-        "Effect": "Allow",
-        "Action": [
-          "s3:ListBucket",
-          "s3:GetObject",
-          "s3:PutObject",
-          "s3:DeleteObject",
-          "s3:CreateBucket",
-          "s3:DeleteBucket",
-          "s3:GetBucket*",
-          "s3:PutBucket*"
-        ],
-        "Resource": [
+        Sid      = "IAMRoleSelfManagement"
+        Effect   = "Allow"
+        Action   = [
+          "iam:CreateRole",
+          "iam:DeleteRole",
+          "iam:GetRole",
+          "iam:UpdateRole",
+          "iam:GetRolePolicy",
+          "iam:PutRolePolicy",
+          "iam:DeleteRolePolicy"
+        ]
+        Resource = "arn:aws:iam::*:role/GitHubActionsTerraformRole"
+      },
+      {
+        Sid      = "TerraformS3RemoteStateAndResourceManagement"
+        Effect   = "Allow"
+        Action   = "s3:*"
+        Resource = [
           "arn:aws:s3:::vpm-app-tfstate-prod",
           "arn:aws:s3:::vpm-app-tfstate-prod/*"
         ]
       },
       {
-        "Sid": "AutoScalingAndSchedulingOperations",
-        "Effect": "Allow",
-        "Action": [
+        Sid      = "AutoScalingAndSchedulingOperations"
+        Effect   = "Allow"
+        Action   = [
           "autoscaling:CreateAutoScalingGroup",
           "autoscaling:UpdateAutoScalingGroup",
           "autoscaling:DeleteAutoScalingGroup",
@@ -89,15 +94,15 @@ resource "aws_iam_role_policy" "terraform_permissions" {
           "autoscaling:DescribeAutoScalingInstances",
           "autoscaling:DescribeScalingActivities",
           "autoscaling:PutScheduledUpdateGroupAction",
-          "autoscaling:DeleteScheduledUpdateGroupAction",
+          "autoscaling:DeleteScheduledAction",
           "autoscaling:DescribeScheduledActions"
-        ],
-        "Resource": "*"
+        ]
+        Resource = "*"
       },
       {
-        "Sid": "LaunchTemplateManagement",
-        "Effect": "Allow",
-        "Action": [
+        Sid      = "LaunchTemplateManagement"
+        Effect   = "Allow"
+        Action   = [
           "ec2:CreateLaunchTemplate",
           "ec2:CreateLaunchTemplateVersion",
           "ec2:DeleteLaunchTemplate",
@@ -106,20 +111,20 @@ resource "aws_iam_role_policy" "terraform_permissions" {
           "ec2:RunInstances",
           "ec2:CreateTags",
           "ec2:DeleteTags"
-        ],
-        "Resource": "*"
+        ]
+        Resource = "*"
       },
       {
-        "Sid": "NetworkAndInfrastructureDiscovery",
-        "Effect": "Allow",
-        "Action": [
+        Sid      = "NetworkAndInfrastructureDiscovery"
+        Effect   = "Allow"
+        Action   = [
           "ec2:DescribeVpcs",
           "ec2:DescribeVpcAttribute",
           "ec2:DescribeSubnets",
           "ec2:DescribeSecurityGroups",
           "ec2:DescribeInstances"
-        ],
-        "Resource": "*"
+        ]
+        Resource = "*"
       }
     ]
   })

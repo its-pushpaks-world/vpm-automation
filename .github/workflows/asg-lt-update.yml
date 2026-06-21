@@ -1,4 +1,4 @@
-name: "Terraform: ASG Repave on AMI Update"
+name: "Terraform: ASG LT change on SSM-AMI Update"
 
 on:
   workflow_dispatch: # Allows EventBridge to trigger via API
@@ -32,7 +32,7 @@ jobs:
     env:
       AWS_ACCOUNT: ${{ secrets.AWS_ACCOUNT }}
       AWS_ACCOUNT2: ${{ secrets.AWS_ACCOUNT2 }}
-      PLATFORM_ACCOUNT_ID: ${{ secrets.PLATFORM_ACCOUNT_ID }} # Central platform account ID
+      TF_VAR_platform_account_id: ${{ secrets.PLATFORM_ACCOUNT_ID }} # Central platform account ID
 
     steps:
       - name: Checkout Code
@@ -58,6 +58,5 @@ jobs:
       - name: Terraform Apply
         run: |
           terraform apply \
-            -var="platform_account_id=${{ secrets.PLATFORM_ACCOUNT_ID }}" \
             -lock=false \
             -auto-approve

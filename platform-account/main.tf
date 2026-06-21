@@ -1,5 +1,21 @@
+terraform {
+  # The remote backend destination for Platform Account
+  backend "s3" {
+    bucket       = "vpm-platform-tfstate-prod" # Choose a unique name
+    key          = "platform/terraform.tfstate"
+    region       = "ap-south-1"
+    use_lockfile = true
+  }
+}
+
 provider "aws" {
   region = "ap-south-1"
+}
+
+# Call the shared module to manage the platform state bucket
+module "state_backend" {
+  source      = "../modules/remote-backend"
+  bucket_name = "vpm-platform-tfstate-prod"
 }
 
 # --- 1. Central Registry ---

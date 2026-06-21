@@ -1,7 +1,6 @@
 terraform {
-  # The remote backend destination for Platform Account
   backend "s3" {
-    bucket       = "vpm-platform-tfstate-prod" # Choose a unique name
+    bucket       = "vpm-platform-tfstate-prod"
     key          = "platform/terraform.tfstate"
     region       = "ap-south-1"
     use_lockfile = true
@@ -12,7 +11,6 @@ provider "aws" {
   region = "ap-south-1"
 }
 
-# Call the shared module to manage the platform state bucket
 module "state_backend" {
   source      = "../modules/remote-backend"
   bucket_name = "vpm-platform-tfstate-prod"
@@ -25,12 +23,20 @@ resource "aws_ssm_parameter" "latest_ami" {
   value = "ami-0685bcc683dadb6b9" 
 }
 
-# --- 2. Cross Account Access ---
+# --- 2. Cross Account Access (Supports Multiple Accounts) ---
 resource "aws_iam_role" "app_cross_account_role" {
   name = "CrossAccountAMIReaderRole"
+
   assume_role_policy = jsonencode({
     Version = "2012-10-17",
-    Statement = [{ Action = "sts:AssumeRole", Effect = "Allow", Principal = { AWS = "arn:aws:iam::${var.app_account_id}:root" } }]
+    Statement = [{
+      Action    = "sts:AssumeRole",
+      Effect    = "Allow",
+      Principal = {
+        # Dynamically converts the account list into root ARN targets
+        AWS = formatlist("arn:aws:iam::%s:root", var.app_account_ids)
+      }
+    }]
   })
 }
 
@@ -72,7 +78,7 @@ resource "aws_cloudwatch_event_rule" "ssm_update_rule" {
 }
 
 resource "aws_iam_role" "eventbridge_api_role" {
-  name = "EventBridgeInvokeGitHubRole"
+  name               = "EventBridgeInvokeGitHubRole"
   assume_role_policy = jsonencode({ Version = "2012-10-17", Statement = [{ Action = "sts:AssumeRole", Effect = "Allow", Principal = { Service = "events.amazonaws.com" } }] })
 }
 
@@ -83,11 +89,11 @@ resource "aws_iam_role_policy" "eventbridge_api_policy" {
 }
 
 resource "aws_cloudwatch_event_target" "trigger_github_actions" {
-  rule      = aws_cloudwatch_event_rule.ssm_update_rule.name
-  arn       = aws_cloudwatch_event_api_destination.github_workflow.arn
-  role_arn  = aws_iam_role.eventbridge_api_role.arn
+  rule     = aws_cloudwatch_event_rule.ssm_update_rule.name
+  arn      = aws_cloudwatch_event_api_destination.github_workflow.arn
+  role_arn = aws_iam_role.eventbridge_api_role.arn
   input_transformer {
-    input_paths = {}
+    input_paths    = {}
     input_template = "{\"ref\": \"main\"}" 
   }
 }
